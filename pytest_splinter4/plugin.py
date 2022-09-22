@@ -418,18 +418,27 @@ def _take_screenshot(
     classname = ".".join(names[:-1])
 
     screenshot_dir = os.path.join(screenshot_dir, classname)
+    LOGGER.info(f'Directory for screenshot file: {screenshot_dir}')
 
     name_0 = names[-1][:128 - len(fixture_name) - 5]
 
     screenshot_file_name = f"{name_0}-{fixture_name}".replace(os.path.sep, "-")
+    LOGGER.info(f'Name of the screenshot file: {screenshot_file_name}')
 
     slaveoutput = getattr(request.config, "workeroutput", None)
+    LOGGER.info(f'Slave output is: {slaveoutput}')
     if not slaveoutput:
+        LOGGER.info('Calling os.makedirs()')
         os.makedirs(screenshot_dir, exist_ok=True)
     else:
+        LOGGER.info('Calling else statement as it is slave output')
         screenshot_dir = session_tmpdir.ensure("screenshots", dir=True).strpath
+        LOGGER.info('updated screenshot directory: {screenshot_dir}')
 
+    LOGGER.info(f'calling screenshot_path')
     screenshot_path = os.path.join(screenshot_dir, screenshot_file_name)
+    LOGGER.info(f'here is the screenshot_path: {screenshot_path}')
+
 
     LOGGER.info(f"Saving screenshot to {screenshot_dir}")
 
@@ -440,6 +449,7 @@ def _take_screenshot(
         screenshot_html_path = browser_instance.html_snapshot(
             name=screenshot_path,
         )
+        LOGGER.info(f'screenshot_html_path: {screenshot_html_path}')
     except Exception as e:  # NOQA
         warnings.warn(pytest.PytestWarning(
             "Could not save html snapshot: {}".format(e)))
@@ -448,6 +458,7 @@ def _take_screenshot(
         screenshot_png_path = browser_instance.screenshot(
             name=screenshot_path, unique_file=False,
         )
+        LOGGER.info(f'screenshot_png_path: {screenshot_png_path}')
     except Exception as e:  # NOQA
         warnings.warn(pytest.PytestWarning(
             "Could not save screenshot: {}".format(e)))
