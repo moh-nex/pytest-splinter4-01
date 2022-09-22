@@ -425,7 +425,7 @@ def _take_screenshot(
     screenshot_file_name = f"{name_0}-{fixture_name}".replace(os.path.sep, "-")
     LOGGER.info(f'Name of the screenshot file: {screenshot_file_name}')
 
-    slaveoutput = getattr(request.config, "workeroutput", None)
+    slaveoutput = getattr(request.config, "slaveoutput", None)
     LOGGER.info(f'Slave output is: {slaveoutput}')
     if not slaveoutput:
         LOGGER.info('Calling os.makedirs()')
