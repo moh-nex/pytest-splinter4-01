@@ -74,9 +74,7 @@ html: {screenshot_html_file_name}
 def Browser(*args, **kwargs):  # NOQA N802
     """Emulate splinter's Browser."""
     visit_condition = kwargs.pop("visit_condition")
-    LOGGER.info('About to call the visit_condition_timeout')
     visit_condition_timeout = kwargs.pop("visit_condition_timeout")
-    LOGGER.info('About to call the browser')
     browser = splinter.Browser(*args, retry_count=6, **kwargs)
     browser.wait_for_condition = functools.partial(
         _wait_for_condition, browser)

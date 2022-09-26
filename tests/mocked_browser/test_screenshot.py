@@ -52,7 +52,7 @@ def test_browser_screenshot_normal(pytester, mocked_browser):
     )
 
     assert os.path.isdir(expected_directory)
-    assert 3 == len(os.listdir(expected_directory))
+    assert 2 == len(os.listdir(expected_directory))
 
     for item in (os.listdir(expected_directory)):
         assert item.startswith('test_screenshot-browser')
@@ -80,7 +80,7 @@ def test_browser_screenshot_function_scoped_browser(pytester, mocked_browser):
     assert 2 == len(os.listdir(expected_directory))
 
     for item in (os.listdir(expected_directory)):
-        assert item.startswith('test_screenshot-browsers')
+        assert item.startswith('test_screenshot-browser')
 
 
 @mock.patch("pytest_splinter4.plugin.splinter.Browser")
