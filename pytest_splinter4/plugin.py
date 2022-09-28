@@ -29,7 +29,7 @@ import splinter  # pragma: no cover
 
 from urllib3.exceptions import MaxRetryError
 
-from .executable_path import get_executable_path
+# from .executable_path import get_executable_path
 from .webdriver_patches import patch_webdriver  # pragma: no cover
 from .xdist_plugin import SplinterXdistPlugin
 
@@ -282,10 +282,6 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
                 executable_path=ChromeDriverManager().install(),
                 log_path=f'{splinter_logs_dir}/chromedriver.log',
             ),
-            # 'service_args': [
-            #     '--verbose',
-            #     f"--log-path={splinter_logs_dir}/chromedriver.log",
-            # ],
             'options': options['chrome'],
         },
         'firefox': {
@@ -293,11 +289,12 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
                 executable_path=GeckoDriverManager().install(),
                 log_path=f"{splinter_logs_dir}/geckodriver.log",
             ),
-            # 'service_log_path': f"{splinter_logs_dir}/geckodriver.log",
             'options': options['firefox'],
         },
         'edge': {
-            'service': ChromiumService(executable_path=EdgeChromiumDriverManager().install()),
+            'service': ChromiumService(
+                executable_path=EdgeChromiumDriverManager().install(),
+            ),
             'options': options['edge'],
         },
         'remote': {},
