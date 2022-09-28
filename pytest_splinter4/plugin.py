@@ -17,7 +17,9 @@ from _pytest import junitxml
 import pytest  # pragma: no cover
 
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support import wait
+from webdriver_manager.chrome import ChromeDriverManager
 
 import splinter  # pragma: no cover
 
@@ -272,7 +274,8 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
 
     driver_kwargs = {
         'chrome': {
-            'executable_path': get_executable_path(cwd, 'chromedriver'),
+            # 'executable_path': get_executable_path(cwd, 'chromedriver'),
+            'service': Service(ChromeDriverManager().install()),
             'service_args': [
                 '--verbose',
                 f"--log-path={splinter_logs_dir}/chromedriver.log",
