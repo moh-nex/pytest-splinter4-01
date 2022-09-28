@@ -278,7 +278,6 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
 
     driver_kwargs = {
         'chrome': {
-            # 'executable_path': get_executable_path(cwd, 'chromedriver'),
             'service': ChromeService(executable_path=ChromeDriverManager().install()),
             'service_args': [
                 '--verbose',
@@ -287,7 +286,6 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
             'options': options['chrome'],
         },
         'firefox': {
-            # 'executable_path': get_executable_path(cwd, 'geckodriver'),
             'service': FirefoxService(
                 executable_path=GeckoDriverManager().install(),
                 service_log_path=f"{splinter_logs_dir}/geckodriver.log",
@@ -296,7 +294,6 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
             'options': options['firefox'],
         },
         'edge': {
-            # 'executable_path': get_executable_path(cwd, 'edgedriver'),
             'service': ChromiumService(executable_path=EdgeChromiumDriverManager().install()),
             'options': options['edge'],
         },
