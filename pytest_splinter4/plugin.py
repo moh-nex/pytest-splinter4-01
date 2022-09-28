@@ -17,13 +17,18 @@ from _pytest import junitxml
 import pytest  # pragma: no cover
 
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.edge.service import Service as ChromiumService
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support import wait
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 import splinter  # pragma: no cover
 
 from urllib3.exceptions import MaxRetryError
 
-from .executable_path import get_executable_path
 from .webdriver_patches import patch_webdriver  # pragma: no cover
 from .xdist_plugin import SplinterXdistPlugin
 
@@ -272,20 +277,23 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
 
     driver_kwargs = {
         'chrome': {
-            'executable_path': get_executable_path(cwd, 'chromedriver'),
-            'service_args': [
-                '--verbose',
-                f"--log-path={splinter_logs_dir}/chromedriver.log",
-            ],
+            'service': ChromeService(
+                executable_path=ChromeDriverManager().install(),
+                log_path=f'{splinter_logs_dir}/chromedriver.log',
+            ),
             'options': options['chrome'],
         },
         'firefox': {
-            'executable_path': get_executable_path(cwd, 'geckodriver'),
-            'service_log_path': f"{splinter_logs_dir}/geckodriver.log",
+            'service': FirefoxService(
+                executable_path=GeckoDriverManager().install(),
+                log_path=f"{splinter_logs_dir}/geckodriver.log",
+            ),
             'options': options['firefox'],
         },
         'edge': {
-            'executable_path': get_executable_path(cwd, 'edgedriver'),
+            'service': ChromiumService(
+                executable_path=EdgeChromiumDriverManager().install(),
+            ),
             'options': options['edge'],
         },
         'remote': {},
@@ -423,7 +431,7 @@ def _take_screenshot(
 
     screenshot_file_name = f"{name_0}-{fixture_name}".replace(os.path.sep, "-")
 
-    slaveoutput = getattr(request.config, "workeroutput", None)
+    slaveoutput = getattr(request.config, "slaveoutput", None)
     if not slaveoutput:
         os.makedirs(screenshot_dir, exist_ok=True)
     else:
