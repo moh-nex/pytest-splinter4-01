@@ -288,7 +288,7 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
         'firefox': {
             'service': FirefoxService(
                 executable_path=GeckoDriverManager().install(),
-                service_log_path=f"{splinter_logs_dir}/geckodriver.log",
+                log_path=f"{splinter_logs_dir}/geckodriver.log",
             ),
             # 'service_log_path': f"{splinter_logs_dir}/geckodriver.log",
             'options': options['firefox'],
