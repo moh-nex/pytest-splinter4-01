@@ -29,7 +29,6 @@ import splinter  # pragma: no cover
 
 from urllib3.exceptions import MaxRetryError
 
-# from .executable_path import get_executable_path
 from .webdriver_patches import patch_webdriver  # pragma: no cover
 from .xdist_plugin import SplinterXdistPlugin
 
