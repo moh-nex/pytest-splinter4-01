@@ -289,7 +289,11 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
         'firefox': {
             # 'executable_path': get_executable_path(cwd, 'geckodriver'),
             'service': FirefoxService(GeckoDriverManager().install()),
-            'service_log_path': f"{splinter_logs_dir}/geckodriver.log",
+            # 'service_log_path': f"{splinter_logs_dir}/geckodriver.log",
+            'service_args': [
+                '--verbose',
+                f"--log-path={splinter_logs_dir}/geckodriver.log",
+            ],
             'options': options['firefox'],
         },
         'edge': {
