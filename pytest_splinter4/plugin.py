@@ -22,7 +22,7 @@ from selenium.webdriver.edge.service import Service as ChromiumService
 from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.support import wait
 from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
+# from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 import splinter  # pragma: no cover
@@ -287,6 +287,7 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
         'firefox': {
             'service': FirefoxService(
                 # executable_path=GeckoDriverManager().install(),
+                # Not using WebDriver_Manager to avoid API limit issue with Firefox Github
                 executable_path=get_executable_path(cwd, 'geckodriver'),
                 log_path=f"{splinter_logs_dir}/geckodriver.log",
             ),
