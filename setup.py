@@ -23,7 +23,7 @@ setup(
     install_requires=[
         'splinter>=0.18.0',
         'pytest>=7.1.2, <8.0',
-        'webdriver-manager>=3.8.3',
+        'webdriver-manager>=3.8.4',
     ],
     classifiers=[
         'Development Status :: 6 - Mature',
