@@ -18,6 +18,13 @@ import pytest  # pragma: no cover
 
 from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.support import wait
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.firefox.service import Service as FirefoxService
+from selenium.webdriver.edge.service import Service as EdgeService
+from webdriver_manager.chrome import ChromeDriverManager
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
+
 
 import splinter  # pragma: no cover
 
@@ -272,7 +279,7 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
 
     driver_kwargs = {
         'chrome': {
-            'executable_path': get_executable_path(cwd, 'chromedriver'),
+            'service': ChromeService(ChromeDriverManager().install()),
             'service_args': [
                 '--verbose',
                 f"--log-path={splinter_logs_dir}/chromedriver.log",
@@ -280,12 +287,13 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
             'options': options['chrome'],
         },
         'firefox': {
-            'executable_path': get_executable_path(cwd, 'geckodriver'),
+            # 'service': FirefoxService(GeckoDriverManager().install()),
+            'service': get_executable_path(cwd, 'geckodriver'),
             'service_log_path': f"{splinter_logs_dir}/geckodriver.log",
             'options': options['firefox'],
         },
         'edge': {
-            'executable_path': get_executable_path(cwd, 'edgedriver'),
+            'service': EdgeService(EdgeChromiumDriverManager().install()),
             'options': options['edge'],
         },
         'remote': {},
