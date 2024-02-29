@@ -17,11 +17,18 @@ from _pytest import junitxml
 import pytest  # pragma: no cover
 
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver.chrome.service import Service as ChromeService
+# from selenium.webdriver.firefox.service import Service as FirefoxService  # NOQA: E800
+from selenium.webdriver.edge.service import Service as EdgeService
 from selenium.webdriver.support import wait
 
 import splinter  # pragma: no cover
 
 from urllib3.exceptions import MaxRetryError
+
+from webdriver_manager.chrome import ChromeDriverManager
+# from webdriver_manager.firefox import GeckoDriverManager  # NOQA: E800
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 from .executable_path import get_executable_path
 from .webdriver_patches import patch_webdriver  # pragma: no cover
@@ -272,7 +279,7 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
 
     driver_kwargs = {
         'chrome': {
-            'executable_path': get_executable_path(cwd, 'chromedriver'),
+            'service': ChromeService(ChromeDriverManager().install()),
             'service_args': [
                 '--verbose',
                 f"--log-path={splinter_logs_dir}/chromedriver.log",
@@ -280,12 +287,13 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
             'options': options['chrome'],
         },
         'firefox': {
-            'executable_path': get_executable_path(cwd, 'geckodriver'),
+            # 'service': FirefoxService(GeckoDriverManager().install()),  # NOQA: E800
+            'service': get_executable_path(cwd, 'geckodriver'),
             'service_log_path': f"{splinter_logs_dir}/geckodriver.log",
             'options': options['firefox'],
         },
         'edge': {
-            'executable_path': get_executable_path(cwd, 'edgedriver'),
+            'service': EdgeService(EdgeChromiumDriverManager().install()),
             'options': options['edge'],
         },
         'remote': {},
@@ -424,10 +432,11 @@ def _take_screenshot(
     screenshot_file_name = f"{name_0}-{fixture_name}".replace(os.path.sep, "-")
 
     slaveoutput = getattr(request.config, "workeroutput", None)
-    if not slaveoutput:
-        os.makedirs(screenshot_dir, exist_ok=True)
-    else:
-        screenshot_dir = session_tmpdir.ensure("screenshots", dir=True).strpath
+    # if not slaveoutput:
+    #     os.makedirs(screenshot_dir, exist_ok=True)
+    # else:
+    #     screenshot_dir = session_tmpdir.ensure("screenshots", dir=True).strpath
+    os.makedirs(screenshot_dir, exist_ok=True)
 
     screenshot_path = os.path.join(screenshot_dir, screenshot_file_name)
 
