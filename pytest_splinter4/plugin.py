@@ -17,18 +17,18 @@ from _pytest import junitxml
 import pytest  # pragma: no cover
 
 from selenium.common.exceptions import WebDriverException
-from selenium.webdriver.support import wait
 from selenium.webdriver.chrome.service import Service as ChromeService
-from selenium.webdriver.firefox.service import Service as FirefoxService
+# from selenium.webdriver.firefox.service import Service as FirefoxService  # NOQA: E800
 from selenium.webdriver.edge.service import Service as EdgeService
-from webdriver_manager.chrome import ChromeDriverManager
-from webdriver_manager.firefox import GeckoDriverManager
-from webdriver_manager.microsoft import EdgeChromiumDriverManager
-
+from selenium.webdriver.support import wait
 
 import splinter  # pragma: no cover
 
 from urllib3.exceptions import MaxRetryError
+
+from webdriver_manager.chrome import ChromeDriverManager
+# from webdriver_manager.firefox import GeckoDriverManager  # NOQA: E800
+from webdriver_manager.microsoft import EdgeChromiumDriverManager
 
 from .executable_path import get_executable_path
 from .webdriver_patches import patch_webdriver  # pragma: no cover
@@ -287,7 +287,7 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
             'options': options['chrome'],
         },
         'firefox': {
-            # 'service': FirefoxService(GeckoDriverManager().install()),
+            # 'service': FirefoxService(GeckoDriverManager().install()),  # NOQA: E800
             'service': get_executable_path(cwd, 'geckodriver'),
             'service_log_path': f"{splinter_logs_dir}/geckodriver.log",
             'options': options['firefox'],
