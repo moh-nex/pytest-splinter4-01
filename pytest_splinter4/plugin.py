@@ -279,11 +279,10 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
 
     driver_kwargs = {
         'chrome': {
-            'service': ChromeService(ChromeDriverManager().install()),
-            'service_args': [
+            'service': ChromeService(ChromeDriverManager().install(), service_args=[
                 '--verbose',
                 f"--log-path={splinter_logs_dir}/chromedriver.log",
-            ],
+            ]),
             'options': options['chrome'],
         },
         'firefox': {
