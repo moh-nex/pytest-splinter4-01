@@ -134,16 +134,6 @@ def splinter_remote_name(request) -> str:
 
 
 @pytest.fixture(scope="session")  # pragma: no cover
-def browser_version(request) -> str:
-    """Version of the browser to use.
-
-    Returns:
-        str
-    """
-    return request.config.option.browser_version
-
-
-@pytest.fixture(scope="session")  # pragma: no cover
 def splinter_selenium_socket_timeout(request) -> int:
     """Set the internal Selenium socket timeout.
 
@@ -275,7 +265,7 @@ def splinter_logs_dir():
 
 
 @pytest.fixture(scope='session')
-def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name, browser_version):
+def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
     """Sane defaults for the various driver arguments."""
     os.makedirs(splinter_logs_dir, exist_ok=True)
 
@@ -290,7 +280,7 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name, bro
     driver_kwargs = {
         'chrome': {
             'service': ChromeService(
-                ChromeDriverManager(browser_version).install(),
+                ChromeDriverManager().install(),
                 service_args=[
                     '--verbose',
                     f"--log-path={splinter_logs_dir}/chromedriver.log",
@@ -849,12 +839,4 @@ def pytest_addoption(parser):  # pragma: no cover
         help="splinter: Run the browser in headless mode.",
         action="store_true",
         dest="splinter_headless",
-    )
-    group.addoption(
-        "--browser-version", 
-        help="Browser version to use",
-        action="store", 
-        dest="browser_version",
-        metavar="VERSION",
-        default="latest",
     )
