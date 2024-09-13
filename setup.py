@@ -1,14 +1,14 @@
 """Setuptools entry point."""
 import os
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 import pytest_splinter4
 
 
 def read(filename):
     path = os.path.join(os.path.dirname(__file__), filename)
-    with open(path, 'r') as f:
+    with open(path) as f:
         return f.read()
 
 setup(
@@ -23,7 +23,7 @@ setup(
     install_requires=[
         'splinter>=0.21.0',
         'pytest>=8.0.0',
-        'webdriver_manager>=4.0.0',
+        'webdriver_manager>=4.0.2',
     ],
     classifiers=[
         'Development Status :: 6 - Mature',
@@ -41,9 +41,11 @@ setup(
         ('Programming Language :: Python :: %s' % x)
         for x in '3.8 3.9 3.10 3.11 3.12'.split()
     ],
-    tests_require=['tox'],
+    extras_require={
+        'dev': ['tox'],
+    },
     entry_points={'pytest11': [
         'pytest-splinter4=pytest_splinter4.plugin',
     ]},
-    packages=['pytest_splinter4'],
+    packages=find_packages(),
 )
