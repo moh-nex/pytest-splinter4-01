@@ -1,10 +1,7 @@
 """Setuptools entry point."""
 import os
-
 from setuptools import setup, find_packages
-
 import pytest_splinter4
-
 
 def read(filename):
     path = os.path.join(os.path.dirname(__file__), filename)
@@ -36,10 +33,11 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: Utilities',
         'Programming Language :: Python :: 3',
-    ]
-    + [
-        ('Programming Language :: Python :: %s' % x)
-        for x in '3.8 3.9 3.10 3.11 3.12'.split()
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
     ],
     extras_require={
         'dev': ['tox'],

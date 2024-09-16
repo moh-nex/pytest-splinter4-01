@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pytest-splinter4"
+version = "0.0.1"
+authors = [
+    { name="Joshua Fehler", email="jsfehler@gmail.com" }
+]
+maintainers = [
+    { name="Joshua Fehler", email="jsfehler@gmail.com" }
+]
+license = { text = "MIT" }
+description = "Pytest plugin for the splinter automation library"
+readme = "README.rst"
+dependencies = [
+    "splinter>=0.21.0",
+    "pytest>=8.0.0",
+    "webdriver_manager>=4.0.2"
+]
+classifiers = [
+    "Development Status :: 6 - Mature",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS :: MacOS X",
+    "Topic :: Software Development :: Testing",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Utilities",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
+]
+
+[project.optional-dependencies]
+dev = ["tox"]
+
+[project.entry-points."pytest11"]
+pytest-splinter4 = "pytest_splinter4.plugin"
