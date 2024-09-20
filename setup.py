@@ -1,10 +1,6 @@
 """Setuptools entry point."""
 import os
-
-from setuptools import setup
-
-import pytest_splinter4
-
+from setuptools import setup, find_packages
 
 def read(filename):
     path = os.path.join(os.path.dirname(__file__), filename)
@@ -17,7 +13,7 @@ setup(
     long_description=read('README.rst'),
     author='Joshua Fehler',
     license='MIT license',
-    version=pytest_splinter4.__version__,
+    version='0.1.0',  # Manually specify the version
     include_package_data=True,
     url='https://github.com/moh-nex/pytest-splinter4-01',
     install_requires=[
@@ -37,14 +33,12 @@ setup(
         'Topic :: Software Development :: Libraries',
         'Topic :: Utilities',
         'Programming Language :: Python :: 3',
-    ]
-    + [
+    ] + [
         ('Programming Language :: Python :: %s' % x)
         for x in '3.8 3.9 3.10 3.11 3.12'.split()
     ],
-    tests_require=['tox'],
     entry_points={'pytest11': [
-        'pytest-splinter4-01=pytest_splinter4-01.plugin',
+        'pytest-splinter4-01=pytest_splinter4.plugin',
     ]},
-    packages=['pytest_splinter4-01'],
+    packages=find_packages(),
 )
