@@ -8,7 +8,7 @@ import pytest_splinter4
 
 def read(filename):
     path = os.path.join(os.path.dirname(__file__), filename)
-    with open(path, 'r') as f:
+    with open(path) as f:
         return f.read()
 
 setup(
@@ -24,6 +24,7 @@ setup(
         'splinter>=0.21.0',
         'pytest>=8.0.0',
         'webdriver_manager>=4.0.0',
+        'setuptools >= 64.0.0',
     ],
     classifiers=[
         'Development Status :: 6 - Mature',
