@@ -12,14 +12,14 @@ def read(filename):
         return f.read()
 
 setup(
-    name='pytest-splinter4',
+    name='pytest-splinter4-01',
     description='Pytest plugin for the splinter automation library',
     long_description=read('README.rst'),
     author='Joshua Fehler',
     license='MIT license',
     version=pytest_splinter4.__version__,
     include_package_data=True,
-    url='https://github.com/jsfehler/pytest-splinter4',
+    url='https://github.com/moh-nex/pytest-splinter4-01',
     install_requires=[
         'splinter>=0.21.0',
         'pytest>=8.0.0',
@@ -43,7 +43,7 @@ setup(
     ],
     tests_require=['tox'],
     entry_points={'pytest11': [
-        'pytest-splinter4=pytest_splinter4.plugin',
+        'pytest-splinter4-01=pytest_splinter4-01.plugin',
     ]},
-    packages=['pytest_splinter4'],
+    packages=['pytest_splinter4-01'],
 )
