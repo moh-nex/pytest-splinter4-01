@@ -544,6 +544,127 @@ def _setup_firefox_profile(request, options):
         options.set_preference(key, value)
 
 
+def get_browser_options(request, splinter_webdriver, _chrome_options, _firefox_options, _default_kwargs):
+    if splinter_webdriver == 'chrome':
+        _default_kwargs['chrome']['options'] = _chrome_options
+    elif splinter_webdriver == 'firefox':
+        _default_kwargs['firefox']['options'] = _firefox_options
+        _setup_firefox_profile(request, _firefox_options)
+    return _default_kwargs
+
+def get_remote_browser_options(request, splinter_remote_name, _chrome_options, _firefox_options, _default_kwargs):
+    if splinter_remote_name == 'chrome':
+        _default_kwargs['remote']['options'] = _chrome_options
+    elif splinter_remote_name == 'firefox':
+        _default_kwargs['remote']['options'] = _firefox_options
+        _setup_firefox_profile(request, _firefox_options)
+    return _default_kwargs
+
+def create_browser_instance(splinter_webdriver, splinter_browser_class, splinter_browser_load_condition, splinter_browser_load_timeout, splinter_wait_time, kwargs, retry_count):
+    try:
+        if splinter_webdriver == 'remote':
+            return splinter_browser_class(
+                splinter_webdriver,
+                visit_condition=splinter_browser_load_condition,
+                visit_condition_timeout=splinter_browser_load_timeout,
+                wait_time=splinter_wait_time,
+                command_executor=kwargs.get('command_executor'),
+                desired_capabilities=kwargs.get('desired_capabilities'),
+                options=kwargs.get('options'),
+                keep_alive=kwargs.get('keep_alive', True)
+            )
+        else:
+            return splinter_browser_class(
+                splinter_webdriver,
+                visit_condition=splinter_browser_load_condition,
+                visit_condition_timeout=splinter_browser_load_timeout,
+                wait_time=splinter_wait_time,
+                **kwargs,
+            )
+    except Exception:
+        if retry_count > 1:
+            return create_browser_instance(splinter_webdriver, splinter_browser_class, splinter_browser_load_condition, splinter_browser_load_timeout, splinter_wait_time, kwargs, retry_count - 1)
+        else:
+            raise
+
+def get_browser(request, splinter_webdriver, splinter_browser_class, splinter_browser_load_condition, splinter_browser_load_timeout, splinter_wait_time, splinter_remote_url, splinter_headless, splinter_driver_kwargs, _chrome_options, _firefox_options, _default_kwargs, retry_count=3):
+    _default_kwargs = get_browser_options(request, splinter_webdriver, _chrome_options, _firefox_options, _default_kwargs)
+    _default_kwargs = get_remote_browser_options(request, splinter_remote_name, _chrome_options, _firefox_options, _default_kwargs)
+    kwargs = get_args(
+        driver=splinter_webdriver,
+        remote_url=splinter_remote_url,
+        headless=splinter_headless,
+        driver_kwargs={
+            **_default_kwargs.get(splinter_webdriver, {}),
+            **splinter_driver_kwargs,
+        },
+    )
+    return create_browser_instance(splinter_webdriver, splinter_browser_class, splinter_browser_load_condition, splinter_browser_load_timeout, splinter_wait_time, kwargs, retry_count)
+
+def prepare_browser_instance(request, parent, splinter_webdriver, splinter_session_scoped_browser, splinter_close_browser, browser_pool, splinter_make_screenshot_on_failure, session_tmpdir, splinter_selenium_implicit_wait, splinter_selenium_speed, splinter_selenium_socket_timeout, splinter_window_size, splinter_clean_cookies_urls, splinter_browser_load_condition, splinter_browser_load_timeout, retry_count=3):
+    browser_key = id(parent)
+    browser = browser_pool.get(browser_key)
+    if not splinter_session_scoped_browser:
+        browser = get_browser(request, splinter_webdriver, splinter_browser_class, splinter_browser_load_condition, splinter_browser_load_timeout, splinter_wait_time, splinter_remote_url, splinter_headless, splinter_driver_kwargs, _chrome_options, _firefox_options, _default_kwargs)
+        if splinter_close_browser:
+            request.addfinalizer(browser.quit)
+    elif not browser:
+        browser = browser_pool[browser_key] = get_browser(request, splinter_webdriver, splinter_browser_class, splinter_browser_load_condition, splinter_browser_load_timeout, splinter_wait_time, splinter_remote_url, splinter_headless, splinter_driver_kwargs, _chrome_options, _firefox_options, _default_kwargs)
+
+    if request.scope == "function":
+        request.addfinalizer(lambda: _take_screenshot_on_failure(request, parent, splinter_make_screenshot_on_failure, session_tmpdir, browser))
+
+    try:
+        if splinter_webdriver not in browser.driver_name.lower():
+            return _replace_browser(request, browser, retry_count, browser_pool, browser_key, parent)
+
+        if hasattr(browser, "driver"):
+            browser.driver.implicitly_wait(splinter_selenium_implicit_wait)
+            browser.driver.set_speed(splinter_selenium_speed)
+            browser.driver.command_executor.set_timeout(splinter_selenium_socket_timeout)
+            browser.driver.command_executor._conn.timeout = splinter_selenium_socket_timeout
+            if splinter_window_size:
+                browser.driver.set_window_size(*splinter_window_size)
+
+        try:
+            browser.cookies.delete_all()
+        except (IOError, HTTPException, WebDriverException):
+            LOGGER.warning("Error cleaning browser cookies", exc_info=True)
+
+        for url in splinter_clean_cookies_urls:
+            browser.visit(url)
+            browser.cookies.delete_all()
+
+        if hasattr(browser, "driver"):
+            browser.visit_condition = splinter_browser_load_condition
+            browser.visit_condition_timeout = splinter_browser_load_timeout
+
+            if splinter_webdriver != 'firefox':
+                browser.visit("about:blank")
+
+    except (HTTPException, WebDriverException, MaxRetryError):
+        return _replace_browser(request, browser, retry_count, browser_pool, browser_key, parent)
+
+    return browser
+
+def _take_screenshot_on_failure(request, parent, splinter_make_screenshot_on_failure, session_tmpdir, browser):
+    if splinter_make_screenshot_on_failure and getattr(request.node, "splinter_failure", True):
+        _take_screenshot(request=request, fixture_name=parent.__name__, session_tmpdir=session_tmpdir, browser_instance=browser)
+
+def _replace_browser(request, browser, retry_count, browser_pool, browser_key, parent):
+    splinter_webdriver = request.getfixturevalue("splinter_webdriver")
+    try:
+        browser.quit()
+    except Exception:
+        pass
+    LOGGER.warning("Error preparing the browser", exc_info=True)
+    if retry_count < 1:
+        raise
+    else:
+        browser = browser_pool[browser_key] = get_browser(request, splinter_webdriver, splinter_browser_class, splinter_browser_load_condition, splinter_browser_load_timeout, splinter_wait_time, splinter_remote_url, splinter_headless, splinter_driver_kwargs, _chrome_options, _firefox_options, _default_kwargs)
+        prepare_browser_instance(request, parent, splinter_webdriver, splinter_session_scoped_browser, splinter_close_browser, browser_pool, splinter_make_screenshot_on_failure, session_tmpdir, splinter_selenium_implicit_wait, splinter_selenium_speed, splinter_selenium_socket_timeout, splinter_window_size, splinter_clean_cookies_urls, splinter_browser_load_condition, splinter_browser_load_timeout, retry_count - 1)
+    return browser
+
 @pytest.fixture(scope="session")
 def browser_instance_getter(
     request,
@@ -574,143 +695,13 @@ def browser_instance_getter(
     """
     _chrome_options = request.getfixturevalue('chrome_options')
     _firefox_options = request.getfixturevalue('firefox_options')
-
-    _default_kwargs = request.getfixturevalue(
-        '_splinter_driver_default_kwargs')
-
-    def get_browser(splinter_webdriver, retry_count=3):
-
-        # Set options objects into kwargs
-        if splinter_webdriver == 'chrome':
-            _default_kwargs['chrome']['options'] = _chrome_options
-
-        elif splinter_webdriver == 'firefox':
-            _default_kwargs['firefox']['options'] = _firefox_options
-            _setup_firefox_profile(request, _firefox_options)
-
-        if splinter_remote_name == 'chrome':
-            _default_kwargs['remote']['options'] = _chrome_options
-
-        elif splinter_remote_name == 'firefox':
-            _default_kwargs['remote']['options'] = _firefox_options
-            _setup_firefox_profile(request, _firefox_options)
-
-        kwargs = get_args(
-            driver=splinter_webdriver,
-            remote_url=splinter_remote_url,
-            headless=splinter_headless,
-            driver_kwargs={
-                **_default_kwargs.get(splinter_webdriver, {}),
-                **splinter_driver_kwargs,
-            },
-        )
-        try:
-            return splinter_browser_class(
-                splinter_webdriver,
-                visit_condition=splinter_browser_load_condition,
-                visit_condition_timeout=splinter_browser_load_timeout,
-                wait_time=splinter_wait_time,
-                **kwargs,
-            )
-        except Exception:  # NOQA
-            if retry_count > 1:
-                return get_browser(splinter_webdriver, retry_count - 1)
-            else:
-                raise
+    _default_kwargs = request.getfixturevalue('_splinter_driver_default_kwargs')
 
     def prepare_browser(request, parent, retry_count=3):
         splinter_webdriver = request.getfixturevalue("splinter_webdriver")
-        splinter_session_scoped_browser = request.getfixturevalue(
-            "splinter_session_scoped_browser",
-        )
-        splinter_close_browser = request.getfixturevalue(
-            "splinter_close_browser")
-        browser_key = id(parent)
-        browser = browser_pool.get(browser_key)
-        if not splinter_session_scoped_browser:
-            browser = get_browser(splinter_webdriver)
-            if splinter_close_browser:
-                request.addfinalizer(browser.quit)
-        elif not browser:
-            browser = browser_pool[browser_key] = get_browser(
-                splinter_webdriver)
-
-        if request.scope == "function":
-
-            def _take_screenshot_on_failure():
-                if splinter_make_screenshot_on_failure and getattr(
-                    request.node, "splinter_failure", True,
-                ):
-                    _take_screenshot(
-                        request=request,
-                        fixture_name=parent.__name__,
-                        session_tmpdir=session_tmpdir,
-                        browser_instance=browser,
-                    )
-
-            request.addfinalizer(_take_screenshot_on_failure)
-
-        try:
-            if splinter_webdriver not in browser.driver_name.lower():
-                return _replace_browser(
-                    request, browser, retry_count, browser_pool, browser_key, parent,
-                )
-
-            if hasattr(browser, "driver"):
-                browser.driver.implicitly_wait(splinter_selenium_implicit_wait)
-                browser.driver.set_speed(splinter_selenium_speed)
-                browser.driver.command_executor.set_timeout(
-                    splinter_selenium_socket_timeout,
-                )
-                browser.driver.command_executor._conn.timeout = (
-                    splinter_selenium_socket_timeout
-                )
-                if splinter_window_size:
-                    browser.driver.set_window_size(*splinter_window_size)
-
-            try:
-                browser.cookies.delete_all()
-            except (IOError, HTTPException, WebDriverException):
-                LOGGER.warning("Error cleaning browser cookies", exc_info=True)
-
-            for url in splinter_clean_cookies_urls:
-                browser.visit(url)
-                browser.cookies.delete_all()
-
-            if hasattr(browser, "driver"):
-                browser.visit_condition = splinter_browser_load_condition
-                browser.visit_condition_timeout = splinter_browser_load_timeout
-
-                # Let firefox preferences handle this.
-                if splinter_webdriver != 'firefox':
-                    browser.visit("about:blank")
-
-        except (HTTPException, WebDriverException, MaxRetryError):
-            return _replace_browser(
-                request, browser, retry_count, browser_pool, browser_key, parent,
-            )
-
-        return browser
-
-    def _replace_browser(request, browser, retry_count, browser_pool, browser_key, parent):
-        splinter_webdriver = request.getfixturevalue("splinter_webdriver")
-
-        # we lost browser, try to restore the justice
-        try:
-            browser.quit()
-        except Exception:  # NOQA
-            pass
-
-        LOGGER.warning("Error preparing the browser", exc_info=True)
-
-        if retry_count < 1:
-            raise
-        else:
-            browser = browser_pool[browser_key] = get_browser(
-                splinter_webdriver)
-            prepare_browser(request, parent, retry_count - 1)
-
-        return browser
+        splinter_session_scoped_browser = request.getfixturevalue("splinter_session_scoped_browser")
+        splinter_close_browser = request.getfixturevalue("splinter_close_browser")
+        return prepare_browser_instance(request, parent, splinter_webdriver, splinter_session_scoped_browser, splinter_close_browser, browser_pool, splinter_make_screenshot_on_failure, session_tmpdir, splinter_selenium_implicit_wait, splinter_selenium_speed, splinter_selenium_socket_timeout, splinter_window_size, splinter_clean_cookies_urls, splinter_browser_load_condition, splinter_browser_load_timeout, retry_count)
 
     return prepare_browser
 
