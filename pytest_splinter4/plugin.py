@@ -272,7 +272,6 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
     options = {
         'chrome': {},
         'firefox': {},
-        'edge': {},
     }
 
     cwd = os.getcwd()
@@ -289,19 +288,10 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
             'options': options['chrome'],
         },
         'firefox': {
-            # 'service': FirefoxService(GeckoDriverManager().install()),  # NOQA: E800
             'service': get_executable_path(cwd, 'geckodriver'),
             'service_log_path': f"{splinter_logs_dir}/geckodriver.log",
             'options': options['firefox'],
         },
-        'edge': {
-            'service': EdgeService(EdgeChromiumDriverManager().install()),
-            'options': options['edge'],
-        },
-        'remote': {},
-        'django': {},
-        'flask': {},
-        'zope.testbrowser': {},
     }
 
     return driver_kwargs
