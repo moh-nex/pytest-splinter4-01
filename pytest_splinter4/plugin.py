@@ -272,6 +272,7 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
     options = {
         'chrome': {},
         'firefox': {},
+        'edge': {},
     }
 
     cwd = os.getcwd()
@@ -291,6 +292,19 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
             'service': get_executable_path(cwd, 'geckodriver'),
             'service_log_path': f"{splinter_logs_dir}/geckodriver.log",
             'options': options['firefox'],
+        },
+        'edge': {
+            'service': EdgeService(
+                EdgeChromiumDriverManager(
+                    url="https://msedgedriver.microsoft.com/",
+                    latest_release_url="https://msedgedriver.microsoft.com/LATEST_RELEASE"
+                ).install(),
+                service_args=[
+                    '--verbose',
+                    f"--log-path={splinter_logs_dir}/edgedriver.log",
+                ],
+            ),
+            'options': options['edge'],
         },
     }
 
