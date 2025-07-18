@@ -17,6 +17,7 @@ from _pytest import junitxml
 import pytest  # pragma: no cover
 
 from selenium.common.exceptions import WebDriverException
+from selenium.webdriver import ChromeOptions, FirefoxOptions
 from selenium.webdriver.chrome.service import Service as ChromeService
 # from selenium.webdriver.firefox.service import Service as FirefoxService  # NOQA: E800
 from selenium.webdriver.edge.service import Service as EdgeService
@@ -587,11 +588,26 @@ def browser_instance_getter(
 
         # Set options objects into kwargs
         if splinter_webdriver == 'chrome':
-            _default_kwargs['chrome']['options'] = _chrome_options
-
+            options = _chrome_options
+            # Merge desired capabilities if needed
+            capabilities = options.to_capabilities()
+            capabilities.update(_default_kwargs['remote'].get('desired_capabilities', {}))
+            kwargs = {
+                'command_executor': splinter_remote_url,
+                'options': options,
+                'capabilities': capabilities,
+                'keep_alive': True,
+            }
         elif splinter_webdriver == 'firefox':
-            _default_kwargs['firefox']['options'] = _firefox_options
-            _setup_firefox_profile(request, _firefox_options)
+            options = _firefox_options
+            capabilities = options.to_capabilities()
+            capabilities.update(_default_kwargs['remote'].get('desired_capabilities', {}))
+            kwargs = {
+                'command_executor': splinter_remote_url,
+                'options': options,
+                'capabilities': capabilities,
+                'keep_alive': True,
+            }
 
         if splinter_remote_name == 'chrome':
             _default_kwargs['remote']['options'] = _chrome_options
