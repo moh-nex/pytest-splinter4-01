@@ -399,14 +399,16 @@ def get_args(
         kwargs["headless"] = headless
 
     elif driver == "remote":
-        kwargs["desired_capabilities"] = driver_kwargs.get(
-            "desired_capabilities", {})
-
+        # Use capabilities instead of desired_capabilities
+        if "capabilities" in driver_kwargs:
+            kwargs["capabilities"] = driver_kwargs["capabilities"]
         if remote_url:
             kwargs["command_executor"] = remote_url
         kwargs["keep_alive"] = True
 
     if driver_kwargs:
+        # Remove desired_capabilities if present
+        driver_kwargs.pop("desired_capabilities", None)
         kwargs.update(driver_kwargs)
     return kwargs
 
