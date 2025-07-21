@@ -293,12 +293,12 @@ def _splinter_driver_default_kwargs(splinter_logs_dir, splinter_remote_name):
             ),
             'options': options['firefox'],
         },
-        'edge': {
-            'service': ChromiumService(
-                executable_path=EdgeChromiumDriverManager().install(),
-            ),
-            'options': options['edge'],
-        },
+        # 'edge': {
+        #     'service': ChromiumService(
+        #         executable_path=EdgeChromiumDriverManager().install(),
+        #     ),
+        #     'options': options['edge'],
+        # },
         'remote': {},
         'django': {},
         'flask': {},
